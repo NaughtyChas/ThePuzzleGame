@@ -1,2 +1,2 @@
 # ThePuzzleGame
-Puzzlegame build for ENGG1330
+Puzzle game built for ENGG1330 group project
