@@ -9,6 +9,5 @@ jobs:
         id: notion
         uses: alessandrobelli/NotionHook@1.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           notion_secret: ${{ secrets.NOTION_SECRET }}
           notion_database: ${{ secrets.NOTION_DATABASE }}
