@@ -33,10 +33,11 @@ class Menu:
         
         menu = self.menus[self.current_menu]
         for idx, row in enumerate(menu):
-            if row == "":
-                continue  # Skip empty lines for spacing
             x = w // 2 - len(row) // 2
             y = len(self.ascii_art) + 1 + idx
+            if row == "":
+                self.stdscr.addstr(y, x, row)
+                continue  # Skip empty lines for spacing
             if idx == self.current_row:
                 self.stdscr.attron(curses.color_pair(1))
                 self.stdscr.addstr(y, x, row)
@@ -64,11 +65,15 @@ class Menu:
                 _, mx, my, _, button_state = curses.getmouse()
                 h, w = self.stdscr.getmaxyx()
                 menu_start_y = len(self.ascii_art) + 1
-                menu_end_y = menu_start_y + len([item for item in self.menus[self.current_menu] if item != ""])
-                if menu_start_y <= my < menu_end_y:
-                    self.current_row = my - menu_start_y
-                    if button_state & curses.BUTTON1_CLICKED:
-                        self.handle_enter()
+                for idx, row in enumerate(self.menus[self.current_menu]):
+                    if row == "":
+                        continue  # Skip empty lines for spacing
+                    y = menu_start_y + idx
+                    if y == my:
+                        self.current_row = idx
+                        if button_state & curses.BUTTON1_CLICKED:
+                            self.handle_enter()
+                        break
 
             self.print_menu()
 
@@ -89,30 +94,30 @@ class Menu:
     def handle_enter(self):
         menu = self.menus[self.current_menu]
         if self.current_menu == "main":
-            if self.current_row == 0:
+            if menu[self.current_row] == "Start Game":
                 self.current_menu = "start_game"
                 self.current_row = 0
-            elif self.current_row == 1:
+            elif menu[self.current_row] == "View Statistics":
                 self.view_statistics()
-            elif self.current_row == 3:
+            elif menu[self.current_row] == "Exit Game":
                 exit()
         elif self.current_menu == "start_game":
-            if self.current_row == 0:
+            if menu[self.current_row] == "Classic Mode":
                 self.current_menu = "classic_mode"
                 self.current_row = 0
-            elif self.current_row == 1:
+            elif menu[self.current_row] == "Timed Mode":
                 self.timed_mode()
-            elif self.current_row == 3:
+            elif menu[self.current_row] == "Back":
                 self.current_menu = "main"
                 self.current_row = 0
         elif self.current_menu == "classic_mode":
-            if self.current_row == 0:
+            if menu[self.current_row] == "Easy":
                 self.start_game("Easy")
-            elif self.current_row == 1:
+            elif menu[self.current_row] == "Hard":
                 self.start_game("Hard")
-            elif self.current_row == 2:
+            elif menu[self.current_row] == "Expert":
                 self.start_game("Expert")
-            elif self.current_row == 4:
+            elif menu[self.current_row] == "Back":
                 self.current_menu = "start_game"
                 self.current_row = 0
 
