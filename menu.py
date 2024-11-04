@@ -32,9 +32,10 @@ class Menu:
             self.stdscr.addstr(i, 0, line)
         
         menu = self.menus[self.current_menu]
+        menu_start_y = (h - len(self.ascii_art) - len([item for item in menu if item != ""])) // 2 + len(self.ascii_art)
         for idx, row in enumerate(menu):
-            x = w // 2 - len(row) // 2
-            y = len(self.ascii_art) + 1 + idx
+            x = 2  # Left-hand side with some padding
+            y = menu_start_y + idx
             if row == "":
                 self.stdscr.addstr(y, x, row)
                 continue  # Skip empty lines for spacing
@@ -64,7 +65,7 @@ class Menu:
             elif key == curses.KEY_MOUSE:
                 _, mx, my, _, button_state = curses.getmouse()
                 h, w = self.stdscr.getmaxyx()
-                menu_start_y = len(self.ascii_art) + 1
+                menu_start_y = (h - len(self.ascii_art) - len([item for item in self.menus[self.current_menu] if item != ""])) // 2 + len(self.ascii_art)
                 for idx, row in enumerate(self.menus[self.current_menu]):
                     if row == "":
                         continue  # Skip empty lines for spacing
