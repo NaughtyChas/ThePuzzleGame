@@ -10,6 +10,17 @@ class Menu:
             "start_game": ["Classic Mode", "Timed Mode", "", "Back"],
             "classic_mode": ["Easy", "Hard", "Expert", "", "Back"]
         }
+        self.descriptions = {
+            "Start Game": "* Play some Wordweeper!",
+            "View Statistics": "* Check data and statistics",
+            "Exit Game": "* Exit the game",
+            "Classic Mode": "* Play the classic mode",
+            "Timed Mode": "* Play the timed mode",
+            "Back": "* Go back to the previous menu",
+            "Easy": "* Easy difficulty",
+            "Hard": "* Hard difficulty",
+            "Expert": "* Expert difficulty"
+        }
         self.ascii_art = [
             "  __          __           _                                   ",
             "  \\ \\        / /          | |                                  ",
@@ -45,6 +56,13 @@ class Menu:
                 self.stdscr.attroff(curses.color_pair(1))
             else:
                 self.stdscr.addstr(y, x, row)
+        
+        # Display description on the right-hand side
+        description = self.descriptions.get(menu[self.current_row], "")
+        description_x = w - len(description) - 2  # Right-hand side with some padding
+        description_y = menu_start_y
+        self.stdscr.addstr(description_y, description_x, description)
+        
         self.stdscr.refresh()
 
     def run(self):
