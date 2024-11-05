@@ -12,6 +12,7 @@ class Board:
             "COMPUTER", "PROGRAM", "LANGUAGE", "DEVELOPER", "SOFTWARE",
             "HARDWARE", "NETWORK", "DATABASE", "SECURITY", "ENCRYPTION"
         ]
+        self.common_letters = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
         self.fill_board()
 
     def fill_board(self):
@@ -22,6 +23,7 @@ class Board:
         selected_words = random.sample(valid_words, 3)
 
         # Randomly place words on the board
+        placed_letters = set()
         for word in selected_words:
             placed = False
             while not placed:
@@ -32,6 +34,7 @@ class Board:
                     if all(self.board[row][col + i] == ' ' for i in range(len(word))):
                         for i in range(len(word)):
                             self.board[row][col + i] = word[i]
+                            placed_letters.add(word[i])
                         placed = True
                 elif direction == 'V' and self.size - len(word) >= 0:
                     row = random.randint(0, self.size - len(word))
@@ -39,13 +42,16 @@ class Board:
                     if all(self.board[row + i][col] == ' ' for i in range(len(word))):
                         for i in range(len(word)):
                             self.board[row + i][col] = word[i]
+                            placed_letters.add(word[i])
                         placed = True
 
-        # Randomly fill some of the remaining empty cells with letters
+        # Randomly fill some of the remaining empty cells with common letters
         for i in range(self.size):
             for j in range(self.size):
                 if self.board[i][j] == ' ' and random.random() < 0.3:  # 30% chance to fill the cell
-                    self.board[i][j] = chr(random.randint(65, 90))  # Randomly choose a letter
+                    # Avoid using letters that are already placed in words
+                    available_letters = [letter for letter in self.common_letters if letter not in placed_letters]
+                    self.board[i][j] = random.choice(available_letters)  # Randomly choose a common letter
 
     def draw_board(self):
         self.stdscr.clear()
