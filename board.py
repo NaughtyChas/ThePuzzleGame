@@ -41,6 +41,12 @@ class Board:
                             self.board[row + i][col] = word[i]
                         placed = True
 
+        # Randomly fill some of the remaining empty cells with letters
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.board[i][j] == ' ' and random.random() < 0.3:  # 30% chance to fill the cell
+                    self.board[i][j] = chr(random.randint(65, 90))  # Randomly choose a letter
+
     def draw_board(self):
         self.stdscr.clear()
         h, w = self.stdscr.getmaxyx()
@@ -63,6 +69,12 @@ class Board:
                     self.stdscr.addstr(y + 1, x, f'| {self.board[i][j]} ')
                 if i < self.size and j == self.size - 1:
                     self.stdscr.addstr(y + 1, x + 4, '|')
+
+        for j in range(self.size):
+            x = start_x + j * 4
+            y = start_y + self.size * 2
+            self.stdscr.addstr(y, x, '+---')
+        self.stdscr.addstr(y, x + 4, '+')
 
         self.stdscr.refresh()
 
