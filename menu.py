@@ -1,4 +1,5 @@
 import curses
+from board import Board
 
 class Menu:
     def __init__(self, stdscr):
@@ -141,8 +142,9 @@ class Menu:
                 self.current_row = 0
 
     def start_game(self, difficulty):
-        # start game logic with difficulty
-        pass
+        if difficulty == "Easy":
+            board = Board(self.stdscr, size=7)
+            board.run()
 
     def timed_mode(self):
         # timed mode logic
