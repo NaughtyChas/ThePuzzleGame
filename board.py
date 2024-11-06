@@ -27,6 +27,7 @@ class Board:
 
         # Randomly place words on the board
         placed_letters = set()
+        word_positions = []
         for word in self.selected_words:
             placed = False
             while not placed:
@@ -38,6 +39,7 @@ class Board:
                         for i in range(len(word)):
                             self.board[row][col + i] = word[i]
                             placed_letters.add(word[i])
+                            word_positions.append((row, col + i))
                         placed = True
                 elif direction == 'V' and self.size - len(word) >= 0:
                     row = random.randint(0, self.size - len(word))
@@ -46,6 +48,7 @@ class Board:
                         for i in range(len(word)):
                             self.board[row + i][col] = word[i]
                             placed_letters.add(word[i])
+                            word_positions.append((row + i, col))
                         placed = True
 
         # Randomly fill some of the remaining empty cells with common letters
@@ -56,14 +59,21 @@ class Board:
                     available_letters = [letter for letter in self.common_letters if letter not in placed_letters]
                     self.board[i][j] = random.choice(available_letters)  # Randomly choose a common letter
 
-        # Randomly place mines on the board
+        # Randomly place mines around the words
         mines_count = 0
         while mines_count < 5:
-            row = random.randint(0, self.size - 1)
-            col = random.randint(0, self.size - 1)
-            if self.board[row][col] == ' ':
-                self.board[row][col] = '*'
-                mines_count += 1
+            for (row, col) in word_positions:
+                for i in range(max(0, row - 1), min(self.size, row + 2)):
+                    for j in range(max(0, col - 1), min(self.size, col + 2)):
+                        if self.board[i][j] == ' ' and random.random() < 0.5:  # 50% chance to place a mine
+                            self.board[i][j] = '*'
+                            mines_count += 1
+                            if mines_count >= 5:
+                                break
+                    if mines_count >= 5:
+                        break
+                if mines_count >= 5:
+                    break
 
     def draw_board(self):
         self.stdscr.clear()
