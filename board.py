@@ -20,6 +20,7 @@ class Board:
         self.exit_prompt = False
         self.menu_button_clicked = False
         self.game_won = False
+        self.move_count = 0  # Initialize move counter
 
     def fill_board(self):
         # Filter out words longer than the board size
@@ -95,6 +96,9 @@ class Board:
             else:
                 hint = " ".join("_" * len(word))
                 self.stdscr.addstr(hint_start_y + idx + 1, 2, hint)
+
+        # Draw move counter below the hint section
+        self.stdscr.addstr(hint_start_y + len(self.selected_words) + 2, 2, f"Moves: {self.move_count}")
 
         for i in range(self.size + 1):
             for j in range(self.size):
@@ -191,6 +195,7 @@ class Board:
                     cell_y = (my - start_y) // 2
                     if self.covered[cell_y][cell_x]:
                         self.covered[cell_y][cell_x] = False
+                        self.move_count += 1  # Increment move counter
                         self.check_revealed_words()
                         self.draw_board()
                         if self.check_all_words_revealed():
