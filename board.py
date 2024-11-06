@@ -185,7 +185,7 @@ class Board:
                 else:
                     self.exit_prompt = True
                     self.draw_board()
-            elif key == curses.KEY_MOUSE:
+            elif key == curses.KEY_MOUSE and not self.game_won:
                 _, mx, my, _, button_state = curses.getmouse()
                 h, w = self.stdscr.getmaxyx()
                 start_x = (w - (self.size * 4 + 1)) // 2
@@ -207,12 +207,19 @@ class Board:
             elif key == ord('q') and self.game_won:
                 curses.endwin()
                 break
-            elif my == h - 2 and w - 12 <= mx < w - 5:
-                if self.menu_button_clicked:
-                    curses.endwin()
-                    break
+            elif key == curses.KEY_MOUSE:
+                _, mx, my, _, button_state = curses.getmouse()
+                h, w = self.stdscr.getmaxyx()
+                if my == h - 2 and w - 12 <= mx < w - 5:
+                    if self.menu_button_clicked:
+                        curses.endwin()
+                        break
+                    else:
+                        self.menu_button_clicked = True
+                        self.draw_board()
                 else:
-                    self.menu_button_clicked = True
+                    self.menu_button_clicked = False
+                    self.exit_prompt = False
                     self.draw_board()
             else:
                 self.menu_button_clicked = False
