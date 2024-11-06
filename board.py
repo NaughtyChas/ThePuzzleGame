@@ -14,6 +14,7 @@ class Board:
             "HARDWARE", "NETWORK", "DATABASE", "SECURITY", "ENCRYPTION"
         ]
         self.selected_words = []
+        self.revealed_words = set()
         self.common_letters = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
         self.fill_board()
         self.exit_prompt = False
@@ -88,8 +89,11 @@ class Board:
         hint_start_y = start_y
         self.stdscr.addstr(hint_start_y, 2, "Words left:")
         for idx, word in enumerate(self.selected_words):
-            hint = " ".join("_" * len(word))
-            self.stdscr.addstr(hint_start_y + idx + 1, 2, hint)
+            if word in self.revealed_words:
+                self.stdscr.addstr(hint_start_y + idx + 1, 2, word)
+            else:
+                hint = " ".join("_" * len(word))
+                self.stdscr.addstr(hint_start_y + idx + 1, 2, hint)
 
         for i in range(self.size + 1):
             for j in range(self.size):
@@ -129,6 +133,30 @@ class Board:
 
         self.stdscr.refresh()
 
+    def check_revealed_words(self):
+        for word in self.selected_words:
+            revealed = True
+            for i in range(self.size):
+                for j in range(self.size):
+                    if self.board[i][j] == word[0]:
+                        if self.check_word_revealed(i, j, word, 'H') or self.check_word_revealed(i, j, word, 'V'):
+                            self.revealed_words.add(word)
+
+    def check_word_revealed(self, row, col, word, direction):
+        if direction == 'H':
+            if col + len(word) > self.size:
+                return False
+            for i in range(len(word)):
+                if self.board[row][col + i] != word[i] or self.covered[row][col + i]:
+                    return False
+        elif direction == 'V':
+            if row + len(word) > self.size:
+                return False
+            for i in range(len(word)):
+                if self.board[row + i][col] != word[i] or self.covered[row + i][col]:
+                    return False
+        return True
+
     def run(self):
         curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
         self.draw_board()
@@ -151,6 +179,7 @@ class Board:
                     cell_y = (my - start_y) // 2
                     if self.covered[cell_y][cell_x]:
                         self.covered[cell_y][cell_x] = False
+                        self.check_revealed_words()
                         self.draw_board()
                 elif my == h - 2 and w - 12 <= mx < w - 5:
                     if self.menu_button_clicked:
