@@ -15,6 +15,8 @@ class Board:
         self.selected_words = []
         self.common_letters = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
         self.fill_board()
+        self.exit_prompt = False
+        self.menu_button_clicked = False
 
     def fill_board(self):
         # Filter out words longer than the board size
@@ -91,52 +93,18 @@ class Board:
             self.stdscr.addstr(y, x, '+---')
         self.stdscr.addstr(y, x + 4, '+')
 
-        # Draw the menu button
-        self.stdscr.addstr(h - 2, w - 12, "[ Menu ]", curses.A_REVERSE)
+        # Draw the menu button and exit prompt
+        if self.menu_button_clicked:
+            self.stdscr.addstr(h - 2, w - 20, "[Click again to quit]", curses.A_REVERSE)
+        else:
+            self.stdscr.addstr(h - 2, w - 12, "[ Menu ]", curses.A_REVERSE)
+
+        if self.exit_prompt:
+            self.stdscr.addstr(h - 1, w - 30, "*Wanna quit? Press esc again to quit.")
+        else:
+            self.stdscr.addstr(h - 1, w - 30, "* Press 'esc' to quit")
 
         self.stdscr.refresh()
-
-    def show_exit_popup(self):
-        h, w = self.stdscr.getmaxyx()
-        popup_width = 40
-        popup_height = 10
-        start_x = (w - popup_width) // 2
-        start_y = (h - popup_height) // 2
-
-        # Draw the popup window
-        popup_win = curses.newwin(popup_height, popup_width, start_y, start_x)
-        popup_win.box()
-        popup_win.addstr(2, 2, "Do you really want to exit this game?")
-        popup_win.addstr(4, 2, "[ Yes ]")
-        popup_win.addstr(4, 12, "[ No ]")
-        popup_win.refresh()
-
-        current_selection = 0
-        while True:
-            if current_selection == 0:
-                popup_win.addstr(4, 2, "[ Yes ]", curses.A_REVERSE)
-                popup_win.addstr(4, 12, "[ No ]")
-            else:
-                popup_win.addstr(4, 2, "[ Yes ]")
-                popup_win.addstr(4, 12, "[ No ]", curses.A_REVERSE)
-            popup_win.refresh()
-
-            key = popup_win.getch()
-            if key == curses.KEY_LEFT or key == curses.KEY_RIGHT:
-                current_selection = 1 - current_selection
-            elif key == ord('\n') or key == curses.KEY_ENTER:
-                if current_selection == 0:
-                    curses.endwin()
-                    exit()
-                else:
-                    break
-            elif key == curses.KEY_MOUSE:
-                _, mx, my, _, button_state = curses.getmouse()
-                if start_y + 4 == my and start_x + 2 <= mx < start_x + 8:
-                    curses.endwin()
-                    exit()
-                elif start_y + 4 == my and start_x + 12 <= mx < start_x + 16:
-                    break
 
     def run(self):
         curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
@@ -144,12 +112,30 @@ class Board:
         while True:
             key = self.stdscr.getch()
             if key == 27:  # ESC key
-                self.show_exit_popup()
+                if self.exit_prompt:
+                    curses.endwin()
+                    break
+                else:
+                    self.exit_prompt = True
+                    self.draw_board()
             elif key == curses.KEY_MOUSE:
                 _, mx, my, _, button_state = curses.getmouse()
                 h, w = self.stdscr.getmaxyx()
                 if my == h - 2 and w - 12 <= mx < w - 5:
-                    self.show_exit_popup()
+                    if self.menu_button_clicked:
+                        curses.endwin()
+                        break
+                    else:
+                        self.menu_button_clicked = True
+                        self.draw_board()
+                else:
+                    self.menu_button_clicked = False
+                    self.exit_prompt = False
+                    self.draw_board()
+            else:
+                self.menu_button_clicked = False
+                self.exit_prompt = False
+                self.draw_board()
 
 if __name__ == "__main__":
     curses.wrapper(Board)
