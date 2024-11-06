@@ -12,6 +12,7 @@ class Board:
             "COMPUTER", "PROGRAM", "LANGUAGE", "DEVELOPER", "SOFTWARE",
             "HARDWARE", "NETWORK", "DATABASE", "SECURITY", "ENCRYPTION"
         ]
+        self.selected_words = []
         self.common_letters = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
         self.fill_board()
 
@@ -20,11 +21,11 @@ class Board:
         valid_words = [word for word in self.words if len(word) <= self.size]
 
         # Randomly select 3 words to place on the board
-        selected_words = random.sample(valid_words, 3)
+        self.selected_words = random.sample(valid_words, 3)
 
         # Randomly place words on the board
         placed_letters = set()
-        for word in selected_words:
+        for word in self.selected_words:
             placed = False
             while not placed:
                 direction = random.choice(['H', 'V'])  # H: Horizontal, V: Vertical
@@ -60,6 +61,13 @@ class Board:
         board_height = self.size * 2 + 1
         start_x = (w - board_width) // 2
         start_y = (h - board_height) // 2
+
+        # Draw hints on the left-hand side
+        hint_start_y = start_y
+        self.stdscr.addstr(hint_start_y, 2, "Words left:")
+        for idx, word in enumerate(self.selected_words):
+            hint = " ".join("_" * len(word))
+            self.stdscr.addstr(hint_start_y + idx + 1, 2, hint)
 
         for i in range(self.size + 1):
             for j in range(self.size):
