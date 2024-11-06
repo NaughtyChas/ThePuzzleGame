@@ -6,6 +6,7 @@ class Board:
         self.stdscr = stdscr
         self.size = size
         self.board = [[' ' for _ in range(size)] for _ in range(size)]
+        self.covered = [[True for _ in range(size)] for _ in range(size)]
         self.words = [
             "PYTHON", "CODE", "DEBUG", "ALGORITHM", "FUNCTION",
             "VARIABLE", "LOOP", "CONDITION", "ARRAY", "STRING",
@@ -101,7 +102,10 @@ class Board:
                 if j == self.size - 1:
                     self.stdscr.addstr(y, x + 4, '+')
                 if i < self.size:
-                    self.stdscr.addstr(y + 1, x, f'| {self.board[i][j]} ')
+                    if self.covered[i][j]:
+                        self.stdscr.addstr(y + 1, x, '| # ')
+                    else:
+                        self.stdscr.addstr(y + 1, x, f'| {self.board[i][j]} ')
                 if i < self.size and j == self.size - 1:
                     self.stdscr.addstr(y + 1, x + 4, '|')
 
@@ -140,7 +144,15 @@ class Board:
             elif key == curses.KEY_MOUSE:
                 _, mx, my, _, button_state = curses.getmouse()
                 h, w = self.stdscr.getmaxyx()
-                if my == h - 2 and w - 12 <= mx < w - 5:
+                start_x = (w - (self.size * 4 + 1)) // 2
+                start_y = (h - (self.size * 2 + 1)) // 2
+                if start_y <= my < start_y + self.size * 2 and start_x <= mx < start_x + self.size * 4:
+                    cell_x = (mx - start_x) // 4
+                    cell_y = (my - start_y) // 2
+                    if self.covered[cell_y][cell_x]:
+                        self.covered[cell_y][cell_x] = False
+                        self.draw_board()
+                elif my == h - 2 and w - 12 <= mx < w - 5:
                     if self.menu_button_clicked:
                         curses.endwin()
                         break
