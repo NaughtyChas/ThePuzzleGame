@@ -93,16 +93,16 @@ class Board:
             self.stdscr.addstr(y, x, '+---')
         self.stdscr.addstr(y, x + 4, '+')
 
-        # Draw the menu button and exit prompt
+        # Draw the menu button and exit prompt on the same line
         if self.menu_button_clicked:
             self.stdscr.addstr(h - 2, w - 20, "[Click again to quit]", curses.A_REVERSE)
         else:
             self.stdscr.addstr(h - 2, w - 12, "[ Menu ]", curses.A_REVERSE)
 
         if self.exit_prompt:
-            self.stdscr.addstr(h - 1, w - 30, "*Wanna quit? Press esc again to quit.")
+            self.stdscr.addstr(h - 2, w - 50, "*Wanna quit? Press esc again to quit.")
         else:
-            self.stdscr.addstr(h - 1, w - 30, "* Press 'esc' to quit")
+            self.stdscr.addstr(h - 2, w - 50, "* Press 'esc' to quit")
 
         self.stdscr.refresh()
 
