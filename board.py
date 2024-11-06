@@ -56,6 +56,15 @@ class Board:
                     available_letters = [letter for letter in self.common_letters if letter not in placed_letters]
                     self.board[i][j] = random.choice(available_letters)  # Randomly choose a common letter
 
+        # Randomly place mines on the board
+        mines_count = 0
+        while mines_count < 5:
+            row = random.randint(0, self.size - 1)
+            col = random.randint(0, self.size - 1)
+            if self.board[row][col] == ' ':
+                self.board[row][col] = '*'
+                mines_count += 1
+
     def draw_board(self):
         self.stdscr.clear()
         h, w = self.stdscr.getmaxyx()
