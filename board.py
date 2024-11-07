@@ -113,37 +113,34 @@ class Board:
 
     def calculate_mine_hint(self, row, col):
         hint = [' ', ' ']
+        top_left = top_right = bottom_left = bottom_right = False
+
         for i in range(max(0, row - 1), min(self.size, row + 2)):
             for j in range(max(0, col - 1), min(self.size, col + 2)):
                 if self.board[i][j] == '*':
                     if i < row and j < col:
-                        if row == 0 or col == 0:
-                            hint[0] = '⠁'  # Top-left
-                        else:
-                            hint[0] = '⡁'  # Top-left and Bottom-left
+                        top_left = True
                     elif i < row and j > col:
-                        if row == 0 or col == self.size - 1:
-                            hint[1] = '⠈'  # Top-right
-                        else:
-                            hint[1] = '⢈'  # Top-right and Bottom-right
+                        top_right = True
                     elif i > row and j < col:
-                        if row == self.size - 1 or col == 0:
-                            hint[0] = '⡀'  # Bottom-left
-                        else:
-                            hint[0] = '⡁'  # Bottom-left and Top-left
+                        bottom_left = True
                     elif i > row and j > col:
-                        if row == self.size - 1 or col == self.size - 1:
-                            hint[1] = '⢀'  # Bottom-right
-                        else:
-                            hint[1] = '⢈'  # Bottom-right and Top-right
-                    elif i < row and j == col:
-                        hint[0] = '⠁'  # Top
-                    elif i > row and j == col:
-                        hint[0] = '⠄'  # Bottom
-                    elif i == row and j < col:
-                        hint[0] = '⠁'  # Left
-                    elif i == row and j > col:
-                        hint[1] = '⠈'  # Right
+                        bottom_right = True
+
+        if top_left and bottom_left:
+            hint[0] = '⡁' if row > 0 else '⡀'
+        elif top_left:
+            hint[0] = '⠁'
+        elif bottom_left:
+            hint[0] = '⡀'
+
+        if top_right and bottom_right:
+            hint[1] = '⢈' if row < self.size - 1 else '⢀'
+        elif top_right:
+            hint[1] = '⠈'
+        elif bottom_right:
+            hint[1] = '⢀'
+
         return hint
 
     def draw_board(self):
