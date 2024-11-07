@@ -117,13 +117,33 @@ class Board:
             for j in range(max(0, col - 1), min(self.size, col + 2)):
                 if self.board[i][j] == '*':
                     if i < row and j < col:
-                        hint[0] = '⠁'  # Top-left
+                        if row == 0 or col == 0:
+                            hint[0] = '⠁'  # Top-left
+                        else:
+                            hint[0] = '⡁'  # Top-left and Bottom-left
                     elif i < row and j > col:
-                        hint[1] = '⠈'  # Top-right
+                        if row == 0 or col == self.size - 1:
+                            hint[1] = '⠈'  # Top-right
+                        else:
+                            hint[1] = '⢈'  # Top-right and Bottom-right
                     elif i > row and j < col:
-                        hint[0] = '⡀'  # Bottom-left
+                        if row == self.size - 1 or col == 0:
+                            hint[0] = '⡀'  # Bottom-left
+                        else:
+                            hint[0] = '⡁'  # Bottom-left and Top-left
                     elif i > row and j > col:
-                        hint[1] = '⢀'  # Bottom-right
+                        if row == self.size - 1 or col == self.size - 1:
+                            hint[1] = '⢀'  # Bottom-right
+                        else:
+                            hint[1] = '⢈'  # Bottom-right and Top-right
+                    elif i < row and j == col:
+                        hint[0] = '⠁'  # Top
+                    elif i > row and j == col:
+                        hint[0] = '⠄'  # Bottom
+                    elif i == row and j < col:
+                        hint[0] = '⠁'  # Left
+                    elif i == row and j > col:
+                        hint[1] = '⠈'  # Right
         return hint
 
     def draw_board(self):
