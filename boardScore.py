@@ -7,7 +7,6 @@ class Board:
         self.size = size
         self.board = [[' ' for _ in range(size)] for _ in range(size)]
         self.covered = [[True for _ in range(size)] for _ in range(size)]
-        self.hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize hints matrix
         self.words = [
             "PYTHON", "CODE", "DEBUG", "ALGORITHM", "FUNCTION",
             "VARIABLE", "LOOP", "CONDITION", "ARRAY", "STRING",
@@ -34,18 +33,6 @@ class Board:
         self.score = 0  # Initialize score
 
     def fill_board(self):
-        # Reset the board and related variables
-        self.board = [[' ' for _ in range(self.size)] for _ in range(self.size)]
-        self.covered = [[True for _ in range(self.size)] for _ in range(self.size)]
-        self.hints = [[' ' for _ in range(self.size)] for _ in range(self.size)]
-        self.selected_words = []
-        self.revealed_words = set()
-        self.word_reveal_status = {}
-        self.move_count = 0
-        self.last_revealed = None
-        self.current_word = None
-        self.score = 0
-
         # Filter out words longer than the board size
         valid_words = [word for word in self.words if len(word) <= self.size]
 
@@ -106,26 +93,6 @@ class Board:
                 if mines_count >= 5:
                     break
 
-        # Calculate hints for each cell
-        for i in range(self.size):
-            for j in range(self.size):
-                self.hints[i][j] = self.calculate_mine_hint(i, j)
-
-    def calculate_mine_hint(self, row, col):
-        hint = [' ', ' ']
-        for i in range(max(0, row - 1), min(self.size, row + 2)):
-            for j in range(max(0, col - 1), min(self.size, col + 2)):
-                if self.board[i][j] == '*':
-                    if i < row and j < col:
-                        hint[0] = '⠁'  # Top-left
-                    elif i < row and j > col:
-                        hint[1] = '⠈'  # Top-right
-                    elif i > row and j < col:
-                        hint[0] = '⡀'  # Bottom-left
-                    elif i > row and j > col:
-                        hint[1] = '⢀'  # Bottom-right
-        return hint
-
     def draw_board(self):
         self.stdscr.clear()
         h, w = self.stdscr.getmaxyx()
@@ -164,9 +131,7 @@ class Board:
                     if self.covered[i][j]:
                         self.stdscr.addstr(y + 1, x, '|▒▒▒')  # Do not change this line
                     else:
-                        hint = self.hints[i][j]
-                        cell_content = f'{hint[0]}{self.board[i][j]}{hint[1]}'
-                        self.stdscr.addstr(y + 1, x, f'|{cell_content}')
+                        self.stdscr.addstr(y + 1, x, f'| {self.board[i][j]} ')
                 if i < self.size and j == self.size - 1:
                     self.stdscr.addstr(y + 1, x + 4, '|')
 
