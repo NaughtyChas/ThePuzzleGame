@@ -21,6 +21,8 @@ class Board:
         self.menu_button_clicked = False
         self.game_won = False
         self.move_count = 0  # Initialize move counter
+        self.score = 0  # Initialize score
+        self.last_revealed = None  # Track the last revealed cell
 
     def fill_board(self):
         # Filter out words longer than the board size
@@ -100,6 +102,9 @@ class Board:
         # Draw move counter below the hint section
         self.stdscr.addstr(hint_start_y + len(self.selected_words) + 2, 2, f"Moves: {self.move_count}")
 
+        # Draw score
+        self.stdscr.addstr(hint_start_y + len(self.selected_words) + 3, 2, f"Score: {self.score}")
+
         for i in range(self.size + 1):
             for j in range(self.size):
                 x = start_x + j * 4
@@ -154,6 +159,8 @@ class Board:
                     if self.board[i][j] == word[0]:
                         if self.check_word_revealed(i, j, word, 'H') or self.check_word_revealed(i, j, word, 'V'):
                             self.revealed_words.add(word)
+                            self.score += len(word) * 10  # Increase score for revealing a word
+                                                          # Score increased is proportional to the length of the word
 
     def check_word_revealed(self, row, col, word, direction):
         if direction == 'H':
@@ -196,6 +203,13 @@ class Board:
                     if self.covered[cell_y][cell_x]:
                         self.covered[cell_y][cell_x] = False
                         self.move_count += 1  # Increment move counter
+                        if self.board[cell_y][cell_x] == '*':
+                            self.score -= 20  # Decrease score for revealing a mine
+                        elif self.last_revealed and (abs(self.last_revealed[0] - cell_y) <= 1 and abs(self.last_revealed[1] - cell_x) <= 1):
+                            self.score += 5  # Increase score for revealing cells in a clean strategy
+                        else:
+                            self.score -= 1  # Decrease score for random clicks
+                        self.last_revealed = (cell_y, cell_x)
                         self.check_revealed_words()
                         self.draw_board()
                         if self.check_all_words_revealed():
