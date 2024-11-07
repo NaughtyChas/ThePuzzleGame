@@ -272,6 +272,7 @@ class Board:
                         self.covered[cell_y][cell_x] = False
                         self.move_count += 1  # Increment move counter
                         if self.board[cell_y][cell_x] == '*':
+                            self.score -= 20  # Decrease score for revealing a mine
                             for word in self.selected_words:
                                 self.word_reveal_status[word] = []  # Reset word reveal status for all words
                             self.current_word = None  # Reset current word
