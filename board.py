@@ -15,14 +15,22 @@ class Board:
         ]
         self.selected_words = []
         self.revealed_words = set()
+        self.word_reveal_status = {}  # Track the reveal status of each word
         self.common_letters = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
+        self.word_complexity = {
+            "PYTHON": 3, "CODE": 2, "DEBUG": 2, "ALGORITHM": 4, "FUNCTION": 3,
+            "VARIABLE": 3, "LOOP": 1, "CONDITION": 3, "ARRAY": 2, "STRING": 2,
+            "COMPUTER": 3, "PROGRAM": 2, "LANGUAGE": 3, "DEVELOPER": 3, "SOFTWARE": 3,
+            "HARDWARE": 2, "NETWORK": 2, "DATABASE": 3, "SECURITY": 3, "ENCRYPTION": 4
+        }
         self.fill_board()
         self.exit_prompt = False
         self.menu_button_clicked = False
         self.game_won = False
         self.move_count = 0  # Initialize move counter
-        self.score = 0  # Initialize score
         self.last_revealed = None  # Track the last revealed cell
+        self.current_word = None  # Track the current word being revealed
+        self.score = 0  # Initialize score
 
     def fill_board(self):
         # Filter out words longer than the board size
@@ -30,6 +38,10 @@ class Board:
 
         # Randomly select 3 words to place on the board
         self.selected_words = random.sample(valid_words, 3)
+
+        # Initialize the reveal status for each selected word
+        for word in self.selected_words:
+            self.word_reveal_status[word] = []
 
         # Randomly place words on the board
         placed_letters = set()
@@ -102,7 +114,7 @@ class Board:
         # Draw move counter below the hint section
         self.stdscr.addstr(hint_start_y + len(self.selected_words) + 2, 2, f"Moves: {self.move_count}")
 
-        # Draw score
+        # Draw score below the move counter
         self.stdscr.addstr(hint_start_y + len(self.selected_words) + 3, 2, f"Score: {self.score}")
 
         for i in range(self.size + 1):
@@ -117,7 +129,7 @@ class Board:
                     self.stdscr.addstr(y, x + 4, '+')
                 if i < self.size:
                     if self.covered[i][j]:
-                        self.stdscr.addstr(y + 1, x, '|▒▒▒ ')
+                        self.stdscr.addstr(y + 1, x, '|▒▒▒')  # Do not change this line
                     else:
                         self.stdscr.addstr(y + 1, x, f'| {self.board[i][j]} ')
                 if i < self.size and j == self.size - 1:
@@ -151,6 +163,24 @@ class Board:
 
         self.stdscr.refresh()
 
+    def calculate_base_score(self, word):
+        word_length = len(word)
+        word_complexity = self.word_complexity.get(word, 1)
+        base_score = word_length * word_complexity
+        return base_score
+
+    def calculate_clean_reveal_bonus(self, clean_reveal):
+        bonus_score = 0
+        if clean_reveal:
+            bonus_score = 10  # Example bonus for clean reveal
+        return bonus_score
+
+    def calculate_total_score(self, word, clean_reveal):
+        base_score = self.calculate_base_score(word)
+        clean_bonus = self.calculate_clean_reveal_bonus(clean_reveal)
+        total_score = base_score + clean_bonus
+        return total_score
+
     def check_revealed_words(self):
         for word in self.selected_words:
             revealed = True
@@ -158,9 +188,12 @@ class Board:
                 for j in range(self.size):
                     if self.board[i][j] == word[0]:
                         if self.check_word_revealed(i, j, word, 'H') or self.check_word_revealed(i, j, word, 'V'):
-                            self.revealed_words.add(word)
-                            self.score += len(word) * 10  # Increase score for revealing a word
-                                                          # Score increased is proportional to the length of the word
+                            if word not in self.revealed_words:
+                                self.revealed_words.add(word)
+                                self.word_reveal_status[word] = []  # Reset word reveal status
+                                self.current_word = None  # Reset current word
+                                clean_reveal = len(self.word_reveal_status[word]) == len(word)  # Ensure no redundant reveals
+                                self.score += self.calculate_total_score(word, clean_reveal)
 
     def check_word_revealed(self, row, col, word, direction):
         if direction == 'H':
@@ -204,13 +237,19 @@ class Board:
                         self.covered[cell_y][cell_x] = False
                         self.move_count += 1  # Increment move counter
                         if self.board[cell_y][cell_x] == '*':
-                            self.score -= 20  # Decrease score for revealing a mine
-                        elif self.last_revealed and (abs(self.last_revealed[0] - cell_y) <= 1 and abs(self.last_revealed[1] - cell_x) <= 1):
-                            self.score += 5  # Increase score for revealing cells in a clean strategy
+                            for word in self.selected_words:
+                                self.word_reveal_status[word] = []  # Reset word reveal status for all words
+                            self.current_word = None  # Reset current word
                         else:
-                            self.score -= 1  # Decrease score for random clicks
-                        self.last_revealed = (cell_y, cell_x)
-                        self.check_revealed_words()
+                            self.last_revealed = (cell_y, cell_x)
+                            # Check if the revealed cell is part of a selected word
+                            for word in self.selected_words:
+                                if self.board[cell_y][cell_x] in word:
+                                    if self.current_word is None:
+                                        self.current_word = word
+                                    if self.current_word == word:
+                                        self.word_reveal_status[word].append((cell_y, cell_x))
+                            self.check_revealed_words()  # This will now only score for full word reveals
                         self.draw_board()
                         if self.check_all_words_revealed():
                             self.game_won = True
