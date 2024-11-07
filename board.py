@@ -117,7 +117,7 @@ class Board:
                     self.stdscr.addstr(y, x + 4, '+')
                 if i < self.size:
                     if self.covered[i][j]:
-                        self.stdscr.addstr(y + 1, x, '| ▒ ')
+                        self.stdscr.addstr(y + 1, x, '|▒▒▒ ')
                     else:
                         self.stdscr.addstr(y + 1, x, f'| {self.board[i][j]} ')
                 if i < self.size and j == self.size - 1:
