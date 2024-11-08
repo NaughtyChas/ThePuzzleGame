@@ -66,6 +66,13 @@ class Menu:
         self.stdscr.refresh()
 
     def run(self):
+        # Check for terminal width and height before printing the main screen
+        h, w = self.stdscr.getmaxyx()
+        # TODO: Check for the longest menu
+        min_height = len(self.ascii_art) + len(self.menus["main"])
+        if h < min_height:
+            raise RuntimeError(f"Your terminal size is too small. The minimum height is {min_height}.")
+
         curses.curs_set(0)
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
         curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
