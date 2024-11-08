@@ -99,7 +99,7 @@ class Board:
                 for i in range(max(1, row - 1), min(self.size - 1, row + 2)):
                     for j in range(max(1, col - 1), min(self.size - 1, col + 2)):
                         if self.board[i][j] == ' ' and random.random() < 0.5:  # 50% chance to place a mine
-                            self.board[i][j] = '*'
+                            self.board[i][j] = '💣'
                             mines_count += 1
                             if mines_count >= 5:
                                 break
@@ -119,7 +119,7 @@ class Board:
 
         for i in range(max(0, row - 1), min(self.size, row + 2)):
             for j in range(max(0, col - 1), min(self.size, col + 2)):
-                if self.board[i][j] == '*':
+                if self.board[i][j] == '💣':
                     if i < row and j < col:
                         top_left = True
                     elif i < row and j > col:
@@ -206,7 +206,7 @@ class Board:
             self.stdscr.addstr(h - 2, w - 12, "[ Menu ]", curses.A_REVERSE)
 
         if self.exit_prompt:
-            self.stdscr.addstr(h - 2, w - 50, "*Wanna quit? Press esc again to quit.")
+            self.stdscr.addstr(h - 2, w - 50, "* Wanna quit? Press esc again to quit.")
         else:
             self.stdscr.addstr(h - 2, w - 50, "* Press 'esc' to quit")
 
@@ -297,7 +297,7 @@ class Board:
                     elif self.covered[cell_y][cell_x]:
                         self.covered[cell_y][cell_x] = False
                         self.move_count += 1  # Increment move counter
-                        if self.board[cell_y][cell_x] == '*':
+                        if self.board[cell_y][cell_x] == '💣':
                             self.score -= 20  # Decrease score for revealing a mine
                             for word in self.selected_words:
                                 self.word_reveal_status[word] = []  # Reset word reveal status for all words
