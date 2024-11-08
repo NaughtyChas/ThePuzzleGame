@@ -23,6 +23,8 @@ class Board:
         self.last_revealed = None  # Track the last revealed cell
         self.current_word = None  # Track the current word being revealed
         self.score = 0  # Initialize score
+        self.random_click_counter = 0
+        self.random_click_cap = 5  # Initial cap for random clicks
 
     def load_words(self):
         words = []
@@ -298,6 +300,28 @@ class Board:
                                 self.word_reveal_status[word] = []  # Reset word reveal status
                                 self.current_word = None  # Reset current word
                                 self.score += self.calculate_total_score(word, clean_reveal)
+                                self.adjust_random_click_cap()
+                                self.award_bonus_points()
+
+    def adjust_random_click_cap(self):
+        words_left = len(self.selected_words) - len(self.revealed_words)
+        if words_left == 3:
+            self.random_click_cap = 5
+        elif words_left == 2:
+            self.random_click_cap = 3
+            self.random_click_counter = max(0, self.random_click_counter - 2)
+        elif words_left == 1:
+            self.random_click_cap = 2
+            self.random_click_counter = max(0, self.random_click_counter - 1)
+
+    def award_bonus_points(self):
+        words_left = len(self.selected_words) - len(self.revealed_words)
+        if words_left == 3 and self.random_click_counter <= 5:
+            self.score += 2
+        elif words_left == 2 and self.random_click_counter <= 3:
+            self.score += 1.5
+        elif words_left == 1 and self.random_click_counter <= 2:
+            self.score += 1
 
     def get_word_cells(self, word):
         cells = []
@@ -363,12 +387,23 @@ class Board:
                         else:
                             self.last_revealed = (cell_y, cell_x)
                             # Check if the revealed cell is part of a selected word
+                            is_part_of_word = False
                             for word in self.selected_words:
                                 if self.board[cell_y][cell_x] in word:
+                                    is_part_of_word = True
                                     if self.current_word is None:
                                         self.current_word = word
                                     if self.current_word == word:
                                         self.word_reveal_status[word].append((cell_y, cell_x))
+                            if not is_part_of_word:
+                                self.random_click_counter += 1
+                                words_left = len(self.selected_words) - len(self.revealed_words)
+                                if words_left == 3 and self.random_click_counter > 5:
+                                    self.score -= 1  # Penalty for random clicks
+                                elif words_left == 2 and self.random_click_counter > 3:
+                                    self.score -= 1.5  # Penalty for random clicks
+                                elif words_left == 1 and self.random_click_counter > 2:
+                                    self.score -= 2  # Penalty for random clicks
                             self.check_revealed_words()  # This will now only score for full word reveals
                         self.draw_board()
                         if self.check_all_words_revealed():
