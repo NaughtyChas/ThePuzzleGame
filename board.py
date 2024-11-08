@@ -91,7 +91,7 @@ class Board:
         # Randomly fill some of the remaining empty cells with common letters
         for i in range(self.size):
             for j in range(self.size):
-                if self.board[i][j] == ' ' and random.random() < 0.3:  # 30% chance to fill the cell
+                if self.board[i][j] == ' ' and random.random() < 0.17:  # Chance to fill the cell
                     # Avoid using letters that are already placed in words
                     available_letters = [letter for letter in self.common_letters if letter not in placed_letters]
                     self.board[i][j] = random.choice(available_letters)  # Randomly choose a common letter
