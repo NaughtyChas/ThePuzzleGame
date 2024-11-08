@@ -93,21 +93,16 @@ class Board:
                     available_letters = [letter for letter in self.common_letters if letter not in placed_letters]
                     self.board[i][j] = random.choice(available_letters)  # Randomly choose a common letter
 
-        # Randomly place mines around the words, but not on the edges
-        mines_count = 0
-        while mines_count < 5:
-            for (row, col) in word_positions:
-                for i in range(max(1, row - 1), min(self.size - 1, row + 2)):
-                    for j in range(max(1, col - 1), min(self.size - 1, col + 2)):
-                        if self.board[i][j] == ' ' and random.random() < 0.5:  # 50% chance to place a mine
-                            self.board[i][j] = '💣'
-                            mines_count += 1
-                            if mines_count >= 5:
-                                break
-                    if mines_count >= 5:
-                        break
-                if mines_count >= 5:
-                    break
+        # Generate a list of all possible positions
+        possible_positions = [(i, j) for i in range(1, self.size - 1) for j in range(1, self.size - 1) if self.board[i][j] == ' ']
+
+        # Randomly shuffle the list of possible positions
+        random.shuffle(possible_positions)
+
+        # Place mines in the first 5 positions from the shuffled list
+        for i in range(5):
+            row, col = possible_positions[i]
+            self.board[row][col] = '💣'
 
         # Calculate mine hints for each cell
         for i in range(self.size):
