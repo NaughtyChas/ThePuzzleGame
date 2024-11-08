@@ -99,8 +99,8 @@ class Board:
         # Randomly shuffle the list of possible positions
         random.shuffle(possible_positions)
 
-        # Place mines in the first 5 positions from the shuffled list
-        for i in range(5):
+        # Place mines in the first 6 positions from the shuffled list
+        for i in range(6):
             row, col = possible_positions[i]
             self.board[row][col] = '💣'
 
