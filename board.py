@@ -10,17 +10,11 @@ class Board:
         self.mine_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize mine hints matrix
         self.letter_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize letter hints matrix
         self.flagged = [[False for _ in range(size)] for _ in range(size)]  # Initialize flagged matrix
-        self.words = self.load_words()  # Load words from file
+        self.words, self.word_complexity = self.load_words()  # Load words and their complexity from file
         self.selected_words = []
         self.revealed_words = set()
         self.word_reveal_status = {}  # Track the reveal status of each word
         self.common_letters = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
-        self.word_complexity = {
-            "PYTHON": 3, "CODE": 2, "DEBUG": 2, "ALGORITHM": 4, "FUNCTION": 3,
-            "VARIABLE": 3, "LOOP": 1, "CONDITION": 3, "ARRAY": 2, "STRING": 2,
-            "COMPUTER": 3, "PROGRAM": 2, "LANGUAGE": 3, "DEVELOPER": 3, "SOFTWARE": 3,
-            "HARDWARE": 2, "NETWORK": 2, "DATABASE": 3, "SECURITY": 3, "ENCRYPTION": 4
-        }
         self.fill_board()
         self.exit_prompt = False
         self.menu_button_clicked = False
@@ -31,9 +25,14 @@ class Board:
         self.score = 0  # Initialize score
 
     def load_words(self):
+        words = []
+        word_complexity = {}
         with open('words.txt', 'r') as file:
-            words = [line.strip() for line in file.readlines()]
-        return words
+            for line in file:
+                word, complexity = line.strip().split(',')
+                words.append(word)
+                word_complexity[word] = int(complexity)
+        return words, word_complexity
 
     def fill_board(self):
         # Reset the board and related variables
