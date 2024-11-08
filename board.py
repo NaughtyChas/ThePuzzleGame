@@ -10,6 +10,7 @@ class Board:
         self.mine_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize mine hints matrix
         self.letter_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize letter hints matrix
         self.flagged = [[False for _ in range(size)] for _ in range(size)]  # Initialize flagged matrix
+        self.questioned = [[False for _ in range(size)] for _ in range(size)]  # Initialize questioned matrix
         self.words, self.word_complexity = self.load_words()  # Load words and their complexity from file
         self.selected_words = []
         self.revealed_words = set()
@@ -231,6 +232,8 @@ class Board:
                     if self.covered[i][j]:
                         if self.flagged[i][j]:
                             self.stdscr.addstr(y + 1, x, '|🚩▒')
+                        elif self.questioned[i][j]:
+                            self.stdscr.addstr(y + 1, x, '|❔▒')
                         else:
                             self.stdscr.addstr(y + 1, x, '|▒▒▒')
                     else:
@@ -379,7 +382,13 @@ class Board:
                     cell_y = (my - start_y) // 2
                     if button_state & curses.BUTTON1_CLICKED and (button_state & curses.BUTTON_CTRL):  # Ctrl + Left click
                         if self.covered[cell_y][cell_x]:
-                            self.flagged[cell_y][cell_x] = not self.flagged[cell_y][cell_x]
+                            if self.flagged[cell_y][cell_x]:
+                                self.flagged[cell_y][cell_x] = False
+                                self.questioned[cell_y][cell_x] = True
+                            elif self.questioned[cell_y][cell_x]:
+                                self.questioned[cell_y][cell_x] = False
+                            else:
+                                self.flagged[cell_y][cell_x] = True
                             self.draw_board()
                     elif self.covered[cell_y][cell_x]:
                         self.covered[cell_y][cell_x] = False
