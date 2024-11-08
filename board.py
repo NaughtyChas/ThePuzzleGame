@@ -10,12 +10,7 @@ class Board:
         self.mine_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize mine hints matrix
         self.letter_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize letter hints matrix
         self.flagged = [[False for _ in range(size)] for _ in range(size)]  # Initialize flagged matrix
-        self.words = [
-            "PYTHON", "CODE", "DEBUG", "ALGORITHM", "FUNCTION",
-            "VARIABLE", "LOOP", "CONDITION", "ARRAY", "STRING",
-            "COMPUTER", "PROGRAM", "LANGUAGE", "DEVELOPER", "SOFTWARE",
-            "HARDWARE", "NETWORK", "DATABASE", "SECURITY", "ENCRYPTION"
-        ]
+        self.words = self.load_words()  # Load words from file
         self.selected_words = []
         self.revealed_words = set()
         self.word_reveal_status = {}  # Track the reveal status of each word
@@ -34,6 +29,11 @@ class Board:
         self.last_revealed = None  # Track the last revealed cell
         self.current_word = None  # Track the current word being revealed
         self.score = 0  # Initialize score
+
+    def load_words(self):
+        with open('words.txt', 'r') as file:
+            words = [line.strip() for line in file.readlines()]
+        return words
 
     def fill_board(self):
         # Reset the board and related variables
