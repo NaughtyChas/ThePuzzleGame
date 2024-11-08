@@ -77,10 +77,13 @@ class Menu:
 
             if key == curses.KEY_UP:
                 self.move_up()
+                self.print_menu()
             elif key == curses.KEY_DOWN:
                 self.move_down()
+                self.print_menu()
             elif key == curses.KEY_ENTER or key in [10, 13]:
                 self.handle_enter()
+                self.print_menu()
             elif key == curses.KEY_MOUSE:
                 _, mx, my, _, button_state = curses.getmouse()
                 h, w = self.stdscr.getmaxyx()
@@ -93,9 +96,11 @@ class Menu:
                         self.current_row = idx
                         if button_state & curses.BUTTON1_CLICKED:
                             self.handle_enter()
+                        self.print_menu()
                         break
-
-            self.print_menu()
+            elif key == 27:  # ESC key
+                self.handle_esc()
+                self.print_menu()
 
     def move_up(self):
         menu = self.menus[self.current_menu]
@@ -140,6 +145,13 @@ class Menu:
             elif menu[self.current_row] == "Back":
                 self.current_menu = "start_game"
                 self.current_row = 0
+
+    def handle_esc(self):
+        if self.current_menu == "main":
+            exit()
+        else:
+            self.current_menu = "main"
+            self.current_row = 0
 
     def start_game(self, difficulty):
         if difficulty == "Easy":
