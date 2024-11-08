@@ -7,7 +7,8 @@ class Board:
         self.size = size
         self.board = [[' ' for _ in range(size)] for _ in range(size)]
         self.covered = [[True for _ in range(size)] for _ in range(size)]
-        self.hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize hints matrix
+        self.mine_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize mine hints matrix
+        self.letter_hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize letter hints matrix
         self.flagged = [[False for _ in range(size)] for _ in range(size)]  # Initialize flagged matrix
         self.words = [
             "PYTHON", "CODE", "DEBUG", "ALGORITHM", "FUNCTION",
@@ -38,7 +39,8 @@ class Board:
         # Reset the board and related variables
         self.board = [[' ' for _ in range(self.size)] for _ in range(self.size)]
         self.covered = [[True for _ in range(self.size)] for _ in range(self.size)]
-        self.hints = [[' ' for _ in range(self.size)] for _ in range(self.size)]
+        self.mine_hints = [[' ' for _ in range(self.size)] for _ in range(self.size)]
+        self.letter_hints = [[' ' for _ in range(self.size)] for _ in range(self.size)]
         self.flagged = [[False for _ in range(self.size)] for _ in range(self.size)]
         self.selected_words = []
         self.revealed_words = set()
@@ -108,24 +110,37 @@ class Board:
                 if mines_count >= 5:
                     break
 
-        # Calculate hints for each cell
+        # Calculate mine hints for each cell
         for i in range(self.size):
             for j in range(self.size):
-                self.hints[i][j] = self.calculate_mine_hint(i, j)
+                self.mine_hints[i][j] = self.calculate_mine_hint(i, j)
+
+        # Calculate letter hints for each empty cell
+        for i in range(self.size):
+            for j in range(self.size):
+                self.letter_hints[i][j] = self.calculate_letter_hint(i, j)
 
     def calculate_mine_hint(self, row, col):
         hint = [' ', ' ']
-        top_left = top_right = bottom_left = bottom_right = False
+        top_left = top = top_right = left = right = bottom_left = bottom = bottom_right = False
 
         for i in range(max(0, row - 1), min(self.size, row + 2)):
             for j in range(max(0, col - 1), min(self.size, col + 2)):
                 if self.board[i][j] == '💣':
                     if i < row and j < col:
                         top_left = True
+                    elif i < row and j == col:
+                        top = True
                     elif i < row and j > col:
                         top_right = True
+                    elif i == row and j < col:
+                        left = True
+                    elif i == row and j > col:
+                        right = True
                     elif i > row and j < col:
                         bottom_left = True
+                    elif i > row and j == col:
+                        bottom = True
                     elif i > row and j > col:
                         bottom_right = True
 
@@ -135,6 +150,8 @@ class Board:
             hint[0] = '⠁'
         elif bottom_left:
             hint[0] = '⡀'
+        elif left:
+            hint[0] = '⡀'
 
         if top_right and bottom_right:
             hint[1] = '⢈' if row < self.size - 1 else '⢀'
@@ -142,8 +159,24 @@ class Board:
             hint[1] = '⠈'
         elif bottom_right:
             hint[1] = '⢀'
+        elif right:
+            hint[1] = '⠈'
+
+        if top:
+            hint[0] = '⠁'
+        if bottom:
+            hint[1] = '⢀'
 
         return hint
+
+    def calculate_letter_hint(self, row, col):
+        count = 0
+        for i in range(max(0, row - 1), min(self.size, row + 2)):
+            for j in range(max(0, col - 1), min(self.size, col + 2)):
+                # Check if the character is part of any selected word
+                if any(self.board[i][j] in word for word in self.selected_words):
+                    count += 1
+        return str(count) if count > 0 else ' '  # Return the count as a string, or a space if count is 0
 
     def draw_board(self):
         self.stdscr.clear()
@@ -186,8 +219,12 @@ class Board:
                         else:
                             self.stdscr.addstr(y + 1, x, '|▒▒▒')
                     else:
-                        hint = self.hints[i][j]
-                        cell_content = f'{hint[0]}{self.board[i][j]}{hint[1]}'
+                        mine_hint = self.mine_hints[i][j]
+                        letter_hint = self.letter_hints[i][j]
+                        if self.board[i][j] == ' ':
+                            cell_content = f'{mine_hint[0]}{letter_hint}{mine_hint[1]}'
+                        else:
+                            cell_content = f'{mine_hint[0]}{self.board[i][j]}{mine_hint[1]}'
                         self.stdscr.addstr(y + 1, x, f'|{cell_content}')
                 if i < self.size and j == self.size - 1:
                     self.stdscr.addstr(y + 1, x + 4, '|')
@@ -246,11 +283,22 @@ class Board:
                     if self.board[i][j] == word[0]:
                         if self.check_word_revealed(i, j, word, 'H') or self.check_word_revealed(i, j, word, 'V'):
                             if word not in self.revealed_words:
+                                clean_reveal = all(cell in self.word_reveal_status[word] for cell in self.get_word_cells(word))
                                 self.revealed_words.add(word)
                                 self.word_reveal_status[word] = []  # Reset word reveal status
                                 self.current_word = None  # Reset current word
-                                clean_reveal = len(self.word_reveal_status[word]) == len(word)  # Ensure no redundant reveals
                                 self.score += self.calculate_total_score(word, clean_reveal)
+
+    def get_word_cells(self, word):
+        cells = []
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.board[i][j] == word[0]:
+                    if self.check_word_revealed(i, j, word, 'H'):
+                        cells.extend([(i, j + k) for k in range(len(word))])
+                    elif self.check_word_revealed(i, j, word, 'V'):
+                        cells.extend([(i + k, j) for k in range(len(word))])
+        return cells
 
     def check_word_revealed(self, row, col, word, direction):
         if direction == 'H':
