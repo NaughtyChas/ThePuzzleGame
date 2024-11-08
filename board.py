@@ -257,15 +257,17 @@ class Board:
         base_score = word_length * word_complexity
         return base_score
 
-    def calculate_clean_reveal_bonus(self, clean_reveal):
+    def calculate_clean_reveal_bonus(self, clean_reveal, word):
         bonus_score = 0
         if clean_reveal:
-            bonus_score = 10  # Example bonus for clean reveal
+            word_length = len(word)
+            word_complexity = self.word_complexity.get(word, 1)
+            bonus_score = 10 + word_length * word_complexity  # Example bonus for clean reveal
         return bonus_score
 
     def calculate_total_score(self, word, clean_reveal):
         base_score = self.calculate_base_score(word)
-        clean_bonus = self.calculate_clean_reveal_bonus(clean_reveal)
+        clean_bonus = self.calculate_clean_reveal_bonus(clean_reveal, word)
         total_score = base_score + clean_bonus
         return total_score
 
@@ -340,7 +342,7 @@ class Board:
                         self.covered[cell_y][cell_x] = False
                         self.move_count += 1  # Increment move counter
                         if self.board[cell_y][cell_x] == '💣':
-                            self.score -= 20  # Decrease score for revealing a mine
+                            self.score -= 50  # Increase penalty for revealing a mine
                             for word in self.selected_words:
                                 self.word_reveal_status[word] = []  # Reset word reveal status for all words
                             self.current_word = None  # Reset current word
