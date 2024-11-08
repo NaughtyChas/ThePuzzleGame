@@ -102,7 +102,7 @@ class Board:
         # Place mines in the first 6 positions from the shuffled list
         for i in range(6):
             row, col = possible_positions[i]
-            self.board[row][col] = '💣'
+            self.board[row][col] = '✱'
 
         # Calculate mine hints for each cell
         for i in range(self.size):
@@ -116,50 +116,64 @@ class Board:
 
     def calculate_mine_hint(self, row, col):
         hint = [' ', ' ']
-        top_left = top = top_right = left = right = bottom_left = bottom = bottom_right = False
+        mines = {
+            'top_left': False, 'top': False, 'top_right': False,
+            'left': False, 'right': False,
+            'bottom_left': False, 'bottom': False, 'bottom_right': False
+        }
 
         for i in range(max(0, row - 1), min(self.size, row + 2)):
             for j in range(max(0, col - 1), min(self.size, col + 2)):
-                if self.board[i][j] == '💣':
+                if self.board[i][j] == '✱':
                     if i < row and j < col:
-                        top_left = True
+                        mines['top_left'] = True
                     elif i < row and j == col:
-                        top = True
+                        mines['top'] = True
                     elif i < row and j > col:
-                        top_right = True
+                        mines['top_right'] = True
                     elif i == row and j < col:
-                        left = True
+                        mines['left'] = True
                     elif i == row and j > col:
-                        right = True
+                        mines['right'] = True
                     elif i > row and j < col:
-                        bottom_left = True
+                        mines['bottom_left'] = True
                     elif i > row and j == col:
-                        bottom = True
+                        mines['bottom'] = True
                     elif i > row and j > col:
-                        bottom_right = True
+                        mines['bottom_right'] = True
 
-        if top_left and bottom_left:
-            hint[0] = '⡁' if row > 0 else '⡀'
-        elif top_left:
+        # Determine the hint based on the mines' positions
+        if mines['top'] and not (mines['top_left'] or mines['top_right']):
             hint[0] = '⠁'
-        elif bottom_left:
-            hint[0] = '⡀'
-        elif left:
-            hint[0] = '⡀'
-
-        if top_right and bottom_right:
-            hint[1] = '⢈' if row < self.size - 1 else '⢀'
-        elif top_right:
-            hint[1] = '⠈'
-        elif bottom_right:
+        if mines['bottom'] and not (mines['bottom_left'] or mines['bottom_right']):
             hint[1] = '⢀'
-        elif right:
+        if mines['left'] and not (mines['top_left'] or mines['bottom_left']):
+            hint[0] = '⡀'
+        if mines['right'] and not (mines['top_right'] or mines['bottom_right']):
             hint[1] = '⠈'
 
-        if top:
+        # Special cases for combined hints
+        if mines['top_left'] and mines['bottom_left']:
+            hint[0] = '⡁'
+        elif mines['top_left']:
             hint[0] = '⠁'
-        if bottom:
+        elif mines['bottom_left']:
+            hint[0] = '⡀'
+
+        if mines['top_right'] and mines['bottom_right']:
+            hint[1] = '⢈'
+        elif mines['top_right']:
+            hint[1] = '⠈'
+        elif mines['bottom_right']:
             hint[1] = '⢀'
+
+        # Handle cases where there are mines in both directions
+        if mines['top'] and mines['bottom']:
+            hint[0] = '⠁'
+            hint[1] = '⢀'
+        if mines['left'] and mines['right']:
+            hint[0] = '⡀'
+            hint[1] = '⠈'
 
         return hint
 
@@ -341,7 +355,7 @@ class Board:
                     elif self.covered[cell_y][cell_x]:
                         self.covered[cell_y][cell_x] = False
                         self.move_count += 1  # Increment move counter
-                        if self.board[cell_y][cell_x] == '💣':
+                        if self.board[cell_y][cell_x] == '✱':
                             self.score -= 50  # Increase penalty for revealing a mine
                             for word in self.selected_words:
                                 self.word_reveal_status[word] = []  # Reset word reveal status for all words
