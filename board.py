@@ -8,6 +8,7 @@ class Board:
         self.board = [[' ' for _ in range(size)] for _ in range(size)]
         self.covered = [[True for _ in range(size)] for _ in range(size)]
         self.hints = [[' ' for _ in range(size)] for _ in range(size)]  # Initialize hints matrix
+        self.flagged = [[False for _ in range(size)] for _ in range(size)]  # Initialize flagged matrix
         self.words = [
             "PYTHON", "CODE", "DEBUG", "ALGORITHM", "FUNCTION",
             "VARIABLE", "LOOP", "CONDITION", "ARRAY", "STRING",
@@ -38,6 +39,7 @@ class Board:
         self.board = [[' ' for _ in range(self.size)] for _ in range(self.size)]
         self.covered = [[True for _ in range(self.size)] for _ in range(self.size)]
         self.hints = [[' ' for _ in range(self.size)] for _ in range(self.size)]
+        self.flagged = [[False for _ in range(self.size)] for _ in range(self.size)]
         self.selected_words = []
         self.revealed_words = set()
         self.word_reveal_status = {}
@@ -179,7 +181,10 @@ class Board:
                     self.stdscr.addstr(y, x + 4, '+')
                 if i < self.size:
                     if self.covered[i][j]:
-                        self.stdscr.addstr(y + 1, x, '|▒▒▒')  # Do not change this line
+                        if self.flagged[i][j]:
+                            self.stdscr.addstr(y + 1, x, '|🚩▒')
+                        else:
+                            self.stdscr.addstr(y + 1, x, '|▒▒▒')
                     else:
                         hint = self.hints[i][j]
                         cell_content = f'{hint[0]}{self.board[i][j]}{hint[1]}'
@@ -285,7 +290,11 @@ class Board:
                 if start_y <= my < start_y + self.size * 2 and start_x <= mx < start_x + self.size * 4:
                     cell_x = (mx - start_x) // 4
                     cell_y = (my - start_y) // 2
-                    if self.covered[cell_y][cell_x]:
+                    if button_state & curses.BUTTON1_CLICKED and (button_state & curses.BUTTON_CTRL):  # Ctrl + Left click
+                        if self.covered[cell_y][cell_x]:
+                            self.flagged[cell_y][cell_x] = not self.flagged[cell_y][cell_x]
+                            self.draw_board()
+                    elif self.covered[cell_y][cell_x]:
                         self.covered[cell_y][cell_x] = False
                         self.move_count += 1  # Increment move counter
                         if self.board[cell_y][cell_x] == '*':
