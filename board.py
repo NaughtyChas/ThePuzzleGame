@@ -402,7 +402,7 @@ class Board:
                             revealed_cells = sum(not self.covered[i][j] for i in range(self.size) for j in range(self.size))
                             total_cells = self.size * self.size
                             base_penalty = 1000
-                            penalty = base_penalty * (1 + revealed_cells / total_cells)
+                            penalty = base_penalty * (1.7 + revealed_cells / total_cells)
                             self.score -= int(penalty)  # Dynamic penalty for revealing a mine
                             for word in self.selected_words:
                                 self.word_reveal_status[word] = []  # Reset word reveal status for all words
