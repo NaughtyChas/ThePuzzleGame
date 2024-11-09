@@ -91,7 +91,7 @@ class Board:
         # Randomly fill some of the remaining empty cells with common letters
         for i in range(self.size):
             for j in range(self.size):
-                if self.board[i][j] == ' ' and random.random() < 0.17:  # Chance to fill the cell
+                if self.board[i][j] == ' ' and random.random() < 0.15:  # Chance to fill the cell
                     # Avoid using letters that are already placed in words
                     available_letters = [letter for letter in self.common_letters if letter not in placed_letters]
                     self.board[i][j] = random.choice(available_letters)  # Randomly choose a common letter
@@ -318,13 +318,13 @@ class Board:
     def adjust_random_click_cap(self):
         words_left = len(self.selected_words) - len(self.revealed_words)
         if words_left == 3:
-            self.random_click_cap = 10 # Stage 1 cap for random clicks
+            self.random_click_cap = 10  # Stage 1 cap for random clicks
         elif words_left == 2:
-            self.random_click_cap = 8 # Stage 2 cap for random clicks
-            self.random_click_counter = max(0, self.random_click_counter - 3)
-        elif words_left == 1:
-            self.random_click_cap = 6 # Stage 3 cap for random clicks
+            self.random_click_cap = 9  # Reduce Stage 2 cap for random clicks
             self.random_click_counter = max(0, self.random_click_counter - 2)
+        elif words_left == 1:
+            self.random_click_cap = 7  # Stage 3 cap for random clicks
+            self.random_click_counter = max(0, self.random_click_counter - 1)
 
     def award_bonus_points(self):
         words_left = len(self.selected_words) - len(self.revealed_words)
